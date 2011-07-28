@@ -2,7 +2,7 @@
 
 BEGIN {
   a="/inet/tcp/0/localhost/6379"
-  #db=SELECT(a,1)
+  db=SELECT(a,0)
   KEYS(a,"*")
   for (key in K) {
     TYPE(a,key)
@@ -13,25 +13,21 @@ BEGIN {
       if (cont > 0) {
       LRANGE(a,i,cont)
       for (j in L) 
-         if(L[j]==ARGV[1] || L[j] ~ ARGV[1]){
-           print "** "i" **"
-           print "   ** "j" **"
-           print L[j]
-         }
+         if(L[j] ~ ARGV[1])
+	   printf("%s %s\n%s:%s\n","List ",i,j,L[j])
       }
     }
     if(K[i]=="hash"){
        HGETALL(a,i)
        for(j in H) {
-         if(H[j]==ARGV[1] || H[j] ~ ARGV[1]){
-           print i
-           print j":"H[j]
-         }
+         if(H[j] ~ ARGV[1])
+           printf("%s %s\n%s:%s\n","Hash ",i,j,H[j])
        }
      }
   }
   close(a)
 }
+
 function SELECT(c,n){
   RS = ORS = "\r\n"
   print "SELECT",n |& c
@@ -39,7 +35,8 @@ function SELECT(c,n){
   db=substr($0,2)
   return db=="OK"
 }
-function LRANGE(c,k,r, cont,i,t){
+
+function LRANGE(c,k,r, cont,i,t,n){
   RS = ORS = "\r\n"
   print "LRANGE",k, "-"r, r |& c
   c |& getline
@@ -50,35 +47,34 @@ function LRANGE(c,k,r, cont,i,t){
   while (cont--){
     c |& getline
     if((cont%2)==0) {
-      if(length($0)==(t+0)) {
-        L[n++]=$0
+      T=$0
+      while((length(T)) < (t+0)) {
+        T=T"\r\n"
+        c |& getline
+        T=T""$0
       }
-      else{
-        T=T""$0"\r\n"
-        while((length(T)) < (t+0)) {
-         c |& getline
-         T=T""$0"\r\n"
-        }
-        L[n++]=T
-        T=""
-      }
+      L[n++]=T
+      T=""
     }
     else {
-     t=substr($0,2)
+      t=substr($0,2)
     }
   }
 }
+
 function TYPE(c,key){
   RS = ORS = "\r\n"
   print "TYPE",key |& c 
   c |& getline
   K[key]=substr($0,2)
 }
+
 function HGETALL(c,key, cont) {
   cont=obtain(c,key,"HGETALL")
   cont=cont*2
   hash(c,cont)
 }
+
 function obtain(c,key,cdo, cont){
   RS = ORS = "\r\n"
   print cdo,key  |& c
@@ -87,30 +83,26 @@ function obtain(c,key,cdo, cont){
   cont=substr($0,2)
   return cont
 }
+
 function KEYS(c,k, cont){
   cont=obtain(c,k,"KEYS")*2
   while (cont--){
     c |& getline
-    if((cont%2)==0) {
-     K[$0]
-     print ".....",$0,"...."
-    }
+    if((cont%2)==0) 
+      K[$0]
   }
 }
+
 function hash(c,cont, prev,T,t){
   delete H
   while (cont--){
    c |& getline
    if((cont%2)==0) {
-      if(length($0)==(t+0)) {
-        T=$0
-      }
-      else{
-        T=T""$0"\r\n"
-        while((length(T)) < (t+0)) {
-         c |& getline
-         T=T""$0"\r\n"
-        }
+      T=$0
+      while((length(T)) < (t+0)) {
+        T=T"\r\n"
+        c |& getline
+        T=T""$0
       }
       if(!prev)
        prev=T
