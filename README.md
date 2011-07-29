@@ -1,7 +1,7 @@
 # Grepredis
 
 
-Grepredis is a AWK script for searching patterns in lists and hashs of a server Redis.
+Grepredis is a AWK script for searching patterns in lists and hashes of a server Redis.
 
 # !NOTE!
 
