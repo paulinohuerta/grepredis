@@ -2,7 +2,9 @@
 
 BEGIN {
   a="/inet/tcp/0/localhost/6379"
-  db=SELECT(a,0)
+  #db=SELECT(a,0)
+  if(!db)
+    print "Selecting default database..." 
   KEYS(a,"*")
   for (key in K) {
     TYPE(a,key)
@@ -11,10 +13,10 @@ BEGIN {
     if(K[i]=="list"){
       cont=obtain(a,i,"LLEN") 
       if (cont > 0) {
-      LRANGE(a,i,cont)
-      for (j in L) 
-         if(L[j] ~ ARGV[1])
-	   printf("%s %s\n%s:%s\n","List ",i,j,L[j])
+        LRANGE(a,i,cont)
+        for (j in L) 
+          if(L[j] ~ ARGV[1])
+	    printf("%s %s\n%s:%s\n","List ",i,j,L[j])
       }
     }
     if(K[i]=="hash"){
@@ -23,7 +25,7 @@ BEGIN {
          if(H[j] ~ ARGV[1])
            printf("%s %s\n%s:%s\n","Hash ",i,j,H[j])
        }
-     }
+    }
   }
   close(a)
 }
