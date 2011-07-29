@@ -7,13 +7,7 @@ Grepredis is a AWK script for searching patterns in lists and hashs of a server 
 
 The limitations are those of AWK text processing.
 
-Comandos Redis ejecutados:
-  SELECT
-  KEYS
-  TYPE
-  LLEN
-  LRANGE
-  HGETALL
+Commands executed by the script: SELECT, KEYS, TYPE, LLEN, LRANGE, HGETALL
 
 ## About
 

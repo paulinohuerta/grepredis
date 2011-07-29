@@ -1,33 +1,33 @@
 #!/usr/bin/awk -f
 
 BEGIN {
-  a="/inet/tcp/0/localhost/6379"
-  #db=SELECT(a,0)
+  sock="/inet/tcp/0/localhost/6379"
+  #db=SELECT(sock,0)  #uncomment for select database, second argument
   if(!db)
     print "Selecting default database..." 
-  KEYS(a,"*")
+  KEYS(sock,"*")
   for (key in K) {
-    TYPE(a,key)
+    TYPE(sock,key)
   }
-  for (i in K) {
-    if(K[i]=="list"){
-      cont=obtain(a,i,"LLEN") 
-      if (cont > 0) {
-        LRANGE(a,i,cont)
-        for (j in L) 
-          if(L[j] ~ ARGV[1])
-	    printf("%s %s\n%s:%s\n","List ",i,j,L[j])
+  for (key in K) {
+    if(K[key]=="list"){
+      count=obtain(sock,key,"LLEN") 
+      if (count > 0) {
+        LRANGE(sock,key,count)
+        for (i in L) 
+          if(L[i] ~ ARGV[1])
+	    printf("%s %s\n%s:%s\n","List ",key,i,L[i])
       }
     }
-    if(K[i]=="hash"){
-       HGETALL(a,i)
-       for(j in H) {
-         if(H[j] ~ ARGV[1])
-           printf("%s %s\n%s:%s\n","Hash ",i,j,H[j])
+    if(K[key]=="hash"){
+       HGETALL(sock,key)
+       for(k in H) {
+         if(H[k] ~ ARGV[1])
+           printf("%s %s\n%s:%s\n","Hash ",key,k,H[k])
        }
     }
   }
-  close(a)
+  close(sock)
 }
 
 function SELECT(c,n){
@@ -38,17 +38,17 @@ function SELECT(c,n){
   return db=="OK"
 }
 
-function LRANGE(c,k,r, cont,i,t,n){
+function LRANGE(c,k,r, count,t,n){
   RS = ORS = "\r\n"
   print "LRANGE",k, "-"r, r |& c
   c |& getline
-  cont=substr($0,2)
-  cont=cont*2
+  count=substr($0,2)
+  count=count*2
   delete L
   n=1
-  while (cont--){
+  while (count--){
     c |& getline
-    if((cont%2)==0) {
+    if((count%2)==0) {
       T=$0
       while((length(T)) < (t+0)) {
         T=T"\r\n"
@@ -71,35 +71,35 @@ function TYPE(c,key){
   K[key]=substr($0,2)
 }
 
-function HGETALL(c,key, cont) {
-  cont=obtain(c,key,"HGETALL")
-  cont=cont*2
-  hash(c,cont)
+function HGETALL(c,key, count) {
+  count=obtain(c,key,"HGETALL")
+  count=count*2
+  hash(c,count)
 }
 
-function obtain(c,key,cdo, cont){
+function obtain(c,key,cdo, count){
   RS = ORS = "\r\n"
   print cdo,key  |& c
   c |& getline
-  cont=$0
-  cont=substr($0,2)
-  return cont
+  count=$0
+  count=substr($0,2)
+  return count
 }
 
-function KEYS(c,k, cont){
-  cont=obtain(c,k,"KEYS")*2
-  while (cont--){
+function KEYS(c,k, count){
+  count=obtain(c,k,"KEYS")*2
+  while (count--){
     c |& getline
     if((cont%2)==0) 
       K[$0]
   }
 }
 
-function hash(c,cont, prev,T,t){
+function hash(c,count, prev,T,t){
   delete H
-  while (cont--){
+  while (count--){
    c |& getline
-   if((cont%2)==0) {
+   if((count%2)==0) {
       T=$0
       while((length(T)) < (t+0)) {
         T=T"\r\n"
