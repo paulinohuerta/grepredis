@@ -86,7 +86,7 @@ function obtain(c,key,cdo, count){
   return count
 }
 
-function KEYS(c,k, count){
+function KEYS(c,k, count) {
   count=obtain(c,k,"KEYS")*2
   while (count--){
     c |& getline
