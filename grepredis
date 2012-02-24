@@ -71,7 +71,7 @@ function TYPE(c,key){
   K[key]=substr($0,2)
 }
 
-function HGETALL(c,key, count) {
+function HGETALL(c,key, count){
   count=obtain(c,key,"HGETALL")
   count=count*2
   hash(c,count)
@@ -86,7 +86,7 @@ function obtain(c,key,cdo, count){
   return count
 }
 
-function KEYS(c,k, count) {
+function KEYS(c,k, count){
   count=obtain(c,k,"KEYS")*2
   while (count--){
     c |& getline
